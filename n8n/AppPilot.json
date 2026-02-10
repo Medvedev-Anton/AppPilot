@@ -1,0 +1,305 @@
+{
+  "name": "AppPilot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c01a0983-cced-45bc-8abb-f59628b6c0cb",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        -256
+      ],
+      "id": "4a5ff2e7-ef3c-4163-8692-6247aa6d1391",
+      "name": "Webhook",
+      "webhookId": "c01a0983-cced-45bc-8abb-f59628b6c0cb"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{JSON.stringify({\n status: \"generated\",\n sessionId: $json.sessionId ?? \"default\",\n project: $json.project\n})}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1216,
+        -240
+      ],
+      "id": "96d39770-a24a-4720-b02b-c22c384df937",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "45fb7e80-ddb2-4fb9-92da-75f7b47a5539",
+              "name": "userMessage",
+              "value": "={{$json.body.message}}",
+              "type": "string"
+            },
+            {
+              "id": "9f4e8513-8d81-486d-b9e0-837621687d60",
+              "name": "sessionId",
+              "value": "={{$json.body.sessionId || \"default\"}}",
+              "type": "string"
+            },
+            {
+              "id": "afa8ba2b-0f4c-4772-a369-aa85a89d0910",
+              "name": "rawInput",
+              "value": "={{$json.body}}",
+              "type": "object"
+            },
+            {
+              "id": "6a4171ef-e37b-4c2d-9b92-2c9b05fafe0a",
+              "name": "stage",
+              "value": "\"generate\"",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -256
+      ],
+      "id": "0be4f577-e985-4e3b-a309-65ceb3627476",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e36e9542-0fe0-4368-a613-2f1949664a5c",
+              "leftValue": "={{$json.userMessage.toLowerCase()}}",
+              "rightValue": "push",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -256
+      ],
+      "id": "21981bce-6949-4ca6-b644-10338ba5365c",
+      "name": "Is Confirm Message?"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior frontend engineer.\n\nYour task:\nGenerate a COMPLETE React application.\n\nSTACK (STRICT):\n- Vite\n- React\n- TypeScript\n\nSTRICT RULES (ABSOLUTE):\n- Output ONLY valid JSON\n- NO markdown\n- NO backticks\n- NO explanations\n- NO comments outside code\n- NO text before or after JSON\n- The response MUST be parseable by JSON.parse()\n\nPROJECT STRUCTURE RULES:\n- Use modern React (functional components)\n- Use TypeScript everywhere\n- Use clean, readable code\n- Use simple CSS (no frameworks)\n- No external UI libraries\n- No backend\n- No environment variables\n\nREQUIRED FILES (minimum):\n- index.html\n- src/main.tsx\n- src/App.tsx\n- src/App.css\n- vite.config.ts\n- tsconfig.json\n\nOUTPUT SCHEMA (MUST MATCH EXACTLY):\n{\n  \"projectName\": string,\n  \"description\": string,\n  \"files\": [\n    {\n      \"path\": string,\n      \"content\": string\n    }\n  ]\n}\n\nIMPORTANT:\n- index.html MUST mount React using <div id=\"root\"></div>\n- src/main.tsx MUST bootstrap React correctly\n- src/App.tsx MUST render a real UI based on the user request\n- CSS must be separated into App.css\n- The project MUST compile if pasted into a Vite project\n\nUser request:\n{{$json.userMessage}}\n",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "={{$json.userMessage}}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        480,
+        -240
+      ],
+      "id": "21533dae-1c9f-4f32-a91f-9ebd44370050",
+      "name": "Frontend Agent"
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -32
+      ],
+      "id": "785f1cdb-1466-46f6-8d78-ad7490a612ed",
+      "name": "Frontend Agent1",
+      "credentials": {
+        "groqApi": {
+          "id": "DoIVKe41ZwhhVKEL",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6a4171ef-e37b-4c2d-9b92-2c9b05fafe0a",
+              "name": "sessionId",
+              "value": "={{$json.sessionId}}",
+              "type": "string"
+            },
+            {
+              "id": "9829f5b0-462f-478b-888a-4cf3ff47fe07",
+              "name": "project",
+              "value": "={{$json.project}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        -240
+      ],
+      "id": "22342a47-ae5a-42b9-8cf8-2dd3132a3fea",
+      "name": "Store Generated Project"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messages = $input.all();\n\nif (!messages.length) {\n  throw new Error(\"No LLM output received\");\n}\n\nconst msg = messages[0].json;\nlet rawText = msg.text;\n\nif (typeof rawText !== \"string\") {\n  throw new Error(\"LLM output is not a string\");\n}\n\n// Убираем markdown на всякий случай\nrawText = rawText\n  .replace(/```json/gi, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\n// Парсим JSON\nlet project;\ntry {\n  project = JSON.parse(rawText);\n} catch (e) {\n  throw new Error(\"Failed to parse JSON from LLM\");\n}\n\n// ЖЁСТКАЯ ВАЛИДАЦИЯ (и это нормально)\nif (\n  !project.projectName ||\n  !Array.isArray(project.files)\n) {\n  throw new Error(\"Invalid React project schema\");\n}\n\n// Проверяем ключевые файлы\nconst requiredFiles = [\n  \"index.html\",\n  \"src/main.tsx\",\n  \"src/App.tsx\"\n];\n\nfor (const file of requiredFiles) {\n  if (!project.files.some(f => f.path === file)) {\n    throw new Error(`Missing required file: ${file}`);\n  }\n}\n\nreturn { project };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -240
+      ],
+      "id": "6e60a59f-f19d-4aab-84c2-fc15e74bd98f",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Is Confirm Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Confirm Message?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Frontend Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Frontend Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Frontend Agent1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Frontend Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Generated Project": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Store Generated Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4c08591b-be56-4257-9a18-64e9b4f34981",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a85e19201f09c8f8b0567da1b9574dc33b02f4530d64259564e3c562059e674b"
+  },
+  "id": "gGW1jjM6c6fkIahC",
+  "tags": []
+}
