@@ -1,138 +1,237 @@
 # AppPilot
 
-AI-ассистент для генерации приложений. Описываешь идею проекта на естественном языке — получаешь готовую структуру с файлами, которую можно сразу запустить.
+**One-day AI prototype for generating React applications from natural-language prompts**
 
-## Как это работает
+[Русская версия / Russian documentation](README.ru.md)
 
-Проект состоит из трех частей, которые работают вместе:
+AppPilot is an AI application generator built as a **rapid prototype during a one-day competition**.
+
+A user describes an application in natural language, and AppPilot sends the request through an n8n workflow to an LLM. The generated response is parsed and validated as a structured React + TypeScript project and displayed in the frontend as a file tree with source code.
+
+The project explores using **n8n as an AI backend orchestrator** instead of a traditional application server.
+
+---
+
+## Highlights
+
+- Built as a **one-day competition prototype**
+- Natural-language → React project generation
+- React + TypeScript frontend
+- n8n workflow used as the backend orchestrator
+- Groq API for LLM inference
+- Structured JSON output from the LLM
+- JavaScript-based response parsing and schema validation
+- Generated project file browser and code viewer
+- Responsive interface
+- PWA support
+
+---
+
+## How It Works
+
+```mermaid
+flowchart LR
+    A[React + TypeScript Frontend]
+    B[n8n Webhook]
+    C[Input Normalization]
+    D[Groq LLM]
+    E[JSON Parser & Validator]
+    F[Generated Project]
+    G[Frontend Code Viewer]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+```
+
+1. The frontend sends a natural-language request to an n8n webhook.
+2. n8n normalizes the incoming request.
+3. The workflow sends a structured prompt to an LLM through Groq.
+4. The LLM returns a JSON representation of a React project.
+5. A JavaScript node parses and validates the response.
+6. The validated project structure is returned to the frontend.
+7. The user can browse generated files and inspect their source code.
+
+---
+
+## Tech Stack
 
 ### Frontend
-React-приложение на TypeScript с минималистичным интерфейсом. Чат для ввода запроса и область просмотра сгенерированного кода. Можно листать файлы, копировать содержимое, смотреть с подсветкой синтаксиса. Работает как обычный веб-сайт или PWA (можно установить на телефон).
 
-### n8n (backend-оркестратор)
-Вместо классического сервера на Express или FastAPI здесь используется n8n — инструмент для автоматизации, который умеет склеивать разные сервисы в workflows. В нашем случае:
+- React
+- TypeScript
+- Vite
+- js-beautify
+- PWA / Service Worker
 
-1. Принимает запрос от фронтенда через webhook
-2. Формирует промпт для нейросети
-3. Отправляет его в LLM (через Groq API)
-4. Парсит JSON-ответ и валидирует структуру
-5. Возвращает результат обратно на фронт
+### AI & Automation
 
-### LLM (Groq)
-Используется модель **Meta LLaMA 4 Maverick** через Groq API. Она получает детальный промпт с требованиями (структура проекта, стек технологий, список обязательных файлов) и возвращает JSON с готовым проектом.
+- n8n
+- Groq API
+- Meta Llama 4 Maverick
+- Structured LLM output
+- Webhooks
 
-Промпт жестко описывает формат ответа, чтобы нейросеть не выдумывала лишнего и генерировала именно то, что можно сразу запустить в Vite.
+---
 
-## Технологии
+## n8n Workflow
 
-### Frontend
-- **React 19.2** — UI-библиотека
-- **TypeScript** — типизация
-- **Vite 7.3** — сборщик и dev-сервер
-- **js-beautify** — форматирование кода (HTML, CSS, JS, JSON)
-- **PWA** — можно установить как приложение (manifest + service worker)
+The n8n workflow acts as a lightweight backend orchestrator.
 
-### Backend
-- **n8n** — визуальный редактор для автоматизации (вместо традиционного REST API)
-- **Groq API** — доступ к мощным LLM (Meta LLaMA 4)
+It handles:
 
-### Особенности
-n8n в данном проекте играет роль backend-оркестратора. Он не хранит данные и не выполняет сложную бизнес-логику — только связывает фронт с нейросетью, обрабатывает запросы и форматирует ответы.
+- incoming webhook requests
+- input normalization
+- LLM prompt execution
+- structured output processing
+- JSON parsing
+- project schema validation
+- webhook responses
 
-## Как запустить локально
+The exported workflow is available at:
 
-### Что нужно установить
+```text
+n8n/AppPilot.json
+```
 
-1. **Node.js** (версия 18 и выше)
-2. **n8n** — можно через npm:
-   ```bash
-   npm install -g n8n
-   ```
+---
 
-### Шаг 1: Запустить n8n
+## Generated Project Format
 
-Открой терминал и запусти n8n:
+The LLM is instructed to return a JSON object with a project name, description, and list of generated files.
+
+Example:
+
+```json
+{
+  "projectName": "example-app",
+  "description": "Example generated React application",
+  "files": [
+    {
+      "path": "src/App.tsx",
+      "content": "..."
+    }
+  ]
+}
+```
+
+The workflow validates the response before returning it to the frontend.
+
+Required generated files include:
+
+- `index.html`
+- `src/main.tsx`
+- `src/App.tsx`
+
+---
+
+## Current Features
+
+- Generate React applications from text prompts
+- Display the generated project structure
+- Browse generated files
+- View source code
+- Copy file contents
+- Responsive mobile interface
+- Install as a PWA
+
+---
+
+## Current Limitations
+
+AppPilot was created as a rapid competition prototype rather than a production-ready code generation platform.
+
+The current version does not include:
+
+- persistent project history
+- in-browser source code editing
+- ZIP export
+- live application preview
+- backend code generation
+- user authentication
+- GitHub repository creation
+- support for frameworks other than React
+
+---
+
+## Getting Started
+
+### Requirements
+
+- Node.js 18+
+- n8n
+- Groq API credentials
+
+### 1. Install and start n8n
 
 ```bash
+npm install -g n8n
 n8n start
 ```
 
-n8n запустится на `http://localhost:5678`. Открой этот адрес в браузере.
+### 2. Import the workflow
 
-### Шаг 2: Импортировать workflow
+Import:
 
-1. В интерфейсе n8n нажми на иконку меню (три полоски) справа вверху
-2. Выбери **Import from File**
-3. Загрузи файл `n8n/AppPilot.json` из корня проекта
-4. Workflow должен открыться в редакторе
-
-### Шаг 3: Настроить Groq API
-
-Чтобы проект работал, нужен API-ключ от Groq:
-
-1. Зарегистрируйся на [console.groq.com](https://console.groq.com) (это бесплатно)
-2. Создай новый API-ключ
-3. В n8n найди ноду **Frontend Agent1** (тип `Groq Chat Model`)
-4. Кликни на нее, затем на **Credentials**
-5. Добавь новый credential с типом **Groq API**
-6. Вставь свой API-ключ
-7. Сохрани
-
-### Шаг 4: Активировать workflow
-
-В правом верхнем углу n8n нажми на переключатель **Active**, чтобы workflow начал принимать запросы.
-
-Webhook будет доступен по адресу:
-```
-http://127.0.0.1:5678/webhook/c01a0983-cced-45bc-8abb-f59628b6c0cb
+```text
+n8n/AppPilot.json
 ```
 
-### Шаг 5: Запустить frontend
+into your n8n instance.
 
-Открой второй терминал и перейди в папку фронтенда:
+Configure your own **Groq API credentials** in the Groq Chat Model node.
+
+### 3. Start the frontend
 
 ```bash
 cd apppilot-frontend
-```
-
-Установи зависимости (если еще не делал):
-
-```bash
 npm install
-```
-
-Запусти dev-сервер:
-
-```bash
 npm run dev
 ```
 
-Фронтенд запустится на `http://localhost:5173`
+The frontend will be available at:
 
-## Что проект умеет сейчас
+```text
+http://localhost:5173
+```
 
-- Генерировать React-проекты на основе текстового описания
-- Отображать структуру проекта (список файлов)
-- Показывать код
-- Копировать содержимое файлов в буфер обмена
-- Адаптироваться под мобильные устройства
-- Устанавливаться как PWA на телефон или компьютер
+---
 
-## Что пока не реализовано
+## Project Structure
 
-- Сохранение истории проектов
-- Редактирование сгенерированного кода прямо в интерфейсе
-- Экспорт проекта одним архивом (.zip)
-- Пре-просмотр UI сгенерированного приложения (iframe)
-- Поддержка других фреймворков (Vue, Svelte, Angular)
-- Генерация backend-части (Node.js, Python)
-- Интеграция с GitHub (автоматическое создание репозитория)
-- Аутентификация пользователей
+```text
+AppPilot/
+├── apppilot-frontend/     # React + TypeScript frontend
+├── n8n/
+│   └── AppPilot.json      # Exported n8n workflow
+└── README.md
+```
 
-## Планы на будущее
+---
 
-- Добавить сохранение проектов в LocalStorage или облако
-- Реализовать экспорт в .zip
-- Встроить preview сгенерированного приложения
-- Поддержать несколько агентов (frontend, backend, fullstack)
-- Добавить возможность задавать дополнительные требования (UI-библиотеки, тему оформления)
+## Project Context
+
+AppPilot was created in approximately **one day as a competition prototype**.
+
+The goal was to quickly test whether a visual automation platform such as n8n could serve as an orchestration layer between a web frontend and an LLM-based code-generation workflow.
+
+---
+
+## Documentation
+
+For detailed setup instructions in Russian, see:
+
+**[README.ru.md](README.ru.md)**
+
+---
+
+## Author
+
+**Anton Medvedev**
+
+Junior AI Integration & Automation Developer
+
+GitHub: [@Medvedev-Anton](https://github.com/Medvedev-Anton)

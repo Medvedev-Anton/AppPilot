@@ -162,7 +162,7 @@
       "name": "Frontend Agent1",
       "credentials": {
         "groqApi": {
-          "id": "DoIVKe41ZwhhVKEL",
+          "id": "#######",
           "name": "Groq account"
         }
       }
@@ -298,7 +298,7 @@
   "versionId": "4c08591b-be56-4257-9a18-64e9b4f34981",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "a85e19201f09c8f8b0567da1b9574dc33b02f4530d64259564e3c562059e674b"
+    "instanceId": "#####"
   },
   "id": "gGW1jjM6c6fkIahC",
   "tags": []
